@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class Calculator : MonoBehaviour
 {
@@ -9,12 +10,14 @@ public class Calculator : MonoBehaviour
 
     public TextMeshProUGUI InputText;
     private double _result;
-    private List<int> _input = new List<int>();
-    private List<int> _secondInput = new List<int>();
+    private int _input;
+    private int _secondInput;
+    private string _currentInput;
     private string _operator;
     private int _decimalPlace1;
     private int _decimalPlace2;
-    
+    private bool _equalIsPressed;
+
 
     #endregion variables
 
@@ -24,108 +27,113 @@ public class Calculator : MonoBehaviour
 
     void Start()
     {
-        _input = new();
-        _secondInput = new();
+
     }
 
     public void ClickNumbers(int value)
     {
         Debug.Log($"  val: {value}");
-        InputText.text = $"{value}";
-        
-        if(_operator == " ")
+
+        if (!string.IsNullOrEmpty(_currentInput) && _currentInput.Length < 10)
         {
-            _input.Insert(0, value);
+            _currentInput += value;
+
         }
         else
         {
-            _secondInput.Insert(0, value);
+            _currentInput = value.ToString();
         }
+        InputText.text = $"{_currentInput}";
+
     }
-    
+
     public void ClickOperators(string value)
     {
-        _operator = value;
         Debug.Log($"  val: {value}");
+        if (_input == 0)
+        {
+            SetCurrentInput();
+            _operator = value;
+        }
+        else
+        {
+            if (_equalIsPressed)
+            {
+                _equalIsPressed = false;
+                _operator = value;
+                _secondInput = 0;
+
+            }
+            else
+            {
+                if (_operator.Equals(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    Calculate();
+                }
+                else
+                {
+                    _operator = value;
+                    _secondInput = 0;
+                }
+            }
+
+        }
     }
 
     public void ClickEquals(string value)
     {
         Debug.Log($"  val: {value}");
+        Calculate();
+        _equalIsPressed = true;
 
-        double _dinput1 = 0;
-        double _dinput2 = 0;
+    }
 
-        for(int i = 0; i <= _input.Count; i++)
+    private void Calculate()
+    {
+        if (_input != 0 && !string.IsNullOrEmpty(_operator))
         {
-            if(i < _decimalPlace1)
-            {
-                _dinput1 += _input[i] * Mathf.Pow(10, _decimalPlace1 - i - 1);
-
-            }
-
-            else
-            {
-                _dinput1 += _input[i] * Mathf.Pow(10, i);
-            }
-        }
-
-        for (int i = 0; i <= _secondInput.Count; i++)
-        {
-            if (i < _decimalPlace1)
-            {
-                _dinput2 += _secondInput[i] * Mathf.Pow(10, _decimalPlace1 - i - 1);
-
-            }
-
-            else
-            {
-                _dinput2 += _secondInput[i] * Mathf.Pow(10, i);
-            }
-        }
-
-
-        if (_dinput1 != 0 && _dinput2 != 0 && !string.IsNullOrEmpty(_operator))
-        {
+            SetCurrentInput();
             switch (_operator)
             {
                 case "+":
-                    _result = _dinput1 + _dinput2;
+                    _result = _input + _secondInput;
                     break;
 
                 case "-":
-                    _result = _dinput1 - _dinput2;
+                    _result = _input + _secondInput;
                     break;
 
                 case "*":
-                    _result = _dinput1 * _dinput2;
+                    _result = _input + _secondInput;
                     break;
+
 
                 case "/":
-                    _result = _dinput1 / _dinput2;
+                    _result = _input + _secondInput;
                     break;
 
-                
-            }
 
+            }
             InputText.SetText(_result.ToString());
-            ClearInput();
+
+            _input = (int)_result;
         }
     }
 
-    public void ClickDot(string value)
+    private void SetCurrentInput()
     {
-        Debug.Log($"  val: {value}");
-        InputText.text = $"{value == "."}";
-        if(_operator == "")
+        if (!string.IsNullOrEmpty(_currentInput))
         {
-            _decimalPlace1 = _input.Count;
+            if (_input == 0)
+            {
+                _input = int.Parse(_currentInput);
+            }
+            else
+            {
+                _secondInput = int.Parse(_currentInput);
+            }
+            _currentInput = "";
         }
-        else
-        {
-            _decimalPlace2 = _secondInput.Count;
-        }
-        
     }
 
     public void ClickAC(string value)
@@ -147,10 +155,11 @@ public class Calculator : MonoBehaviour
 
     public void ClearInput()
     {
-        _input = new();
-        _secondInput = new();
-        _operator = "";
-        
+        _currentInput = "";
+        _input = 0;
+        _secondInput = 0;
+        _result = 0;
+        InputText.SetText("");
     }
 
     #endregion methods
