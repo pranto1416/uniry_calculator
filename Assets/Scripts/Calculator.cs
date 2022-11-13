@@ -146,6 +146,7 @@ public class Calculator : MonoBehaviour
     public void ClickSquareRoot(string value)
     {
         Debug.Log($"  val: {value}");
+
     }
 
     public void ClickPower(string value)
